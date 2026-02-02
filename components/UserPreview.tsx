@@ -59,10 +59,27 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
   const animationFrameRef = useRef<number>();
   const videoStreamRef = useRef<MediaStream | null>(null);
 
-  // 移动端兼容性检测
+  // 移动端兼容性检测 - 增强版，防止在某些环境下出错
   const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           (window.innerWidth <= 768);
+    try {
+      // 检查是否在浏览器环境中
+      if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+        return false;
+      }
+      
+      // 用户代理检测
+      const userAgent = navigator.userAgent || '';
+      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+      
+      // 屏幕宽度检测（安全检查）
+      const screenWidth = window.innerWidth || screen?.width || 0;
+      
+      return mobileRegex.test(userAgent) || screenWidth <= 768;
+    } catch (error) {
+      console.warn('Mobile detection failed:', error);
+      // 如果检测失败，默认返回false（桌面端）
+      return false;
+    }
   };
 
   // 移动端触摸事件处理
@@ -235,12 +252,17 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
 
         const validatedProject = validation.project!;
         
-        // 记录用户访问（匿名统计）
-        await projectService.logUserAccess(projectId, {
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          referrer: document.referrer
-        });
+        // 记录用户访问（匿名统计）- 增加错误处理
+        try {
+          await projectService.logUserAccess(projectId, {
+            timestamp: new Date().toISOString(),
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+            referrer: typeof document !== 'undefined' ? document.referrer : ''
+          });
+        } catch (logError) {
+          console.warn('用户访问记录失败:', logError);
+          // 不影响主流程，继续执行
+        }
         
         // 直接更新状态，避免setTimeout可能导致的问题
         setProject(validatedProject);
