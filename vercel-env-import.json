@@ -1,0 +1,50 @@
+[
+  {
+    "key": "ZHIPU_API_KEY",
+    "value": "95e635b202714947a903104808ab6643.DmxvLwF1hQXYHYdi",
+    "target": ["production", "preview", "development"],
+    "type": "encrypted"
+  },
+  {
+    "key": "API_KEY",
+    "value": "95e635b202714947a903104808ab6643.DmxvLwF1hQXYHYdi",
+    "target": ["production", "preview", "development"],
+    "type": "encrypted"
+  },
+  {
+    "key": "NODE_ENV",
+    "value": "production",
+    "target": ["production"],
+    "type": "plain"
+  },
+  {
+    "key": "VITE_APP_TITLE",
+    "value": "SmartGuide AI",
+    "target": ["production", "preview", "development"],
+    "type": "plain"
+  },
+  {
+    "key": "VITE_APP_VERSION",
+    "value": "1.0.0",
+    "target": ["production", "preview", "development"],
+    "type": "plain"
+  },
+  {
+    "key": "VITE_ZHIPU_BASE_URL",
+    "value": "https://open.bigmodel.cn/api/paas/v4",
+    "target": ["production", "preview", "development"],
+    "type": "plain"
+  },
+  {
+    "key": "REACT_APP_ENV",
+    "value": "production",
+    "target": ["production"],
+    "type": "plain"
+  },
+  {
+    "key": "VERCEL_URL",
+    "value": "auto-generated-by-vercel",
+    "target": ["production", "preview"],
+    "type": "system"
+  }
+]
