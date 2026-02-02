@@ -867,7 +867,8 @@ export class AIService {
 
   async generateSpeech(text: string, voiceName: string, provider: AIProvider): Promise<string | undefined> {
     // 检查API密钥是否存在
-    if (!this.zhipuApiKey) {
+    const apiKey = this.getZhipuApiKey();
+    if (!apiKey) {
       return undefined;
     }
 

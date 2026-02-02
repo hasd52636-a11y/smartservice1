@@ -1016,15 +1016,27 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projects, onUpdate }) => 
                             const testText = voiceDescriptions[localProject.config.voiceName as keyof typeof voiceDescriptions] || "您好，这是语音试听测试。";
                             
                             // 调用TTS服务
-                            const audioData = await aiService.generateSpeech(testText, localProject.config.voiceName, localProject.config.provider);
-                            
-                            if (audioData) {
-                              const audio = new Audio(`data:audio/wav;base64,${audioData}`);
-                              audio.onended = () => setIsPlayingVoice(false);
-                              audio.onerror = () => setIsPlayingVoice(false);
-                              await audio.play();
-                            } else {
-                              alert('语音试听需要配置API密钥，请先在上方配置智谱AI API密钥。');
+                            try {
+                              const audioData = await aiService.generateSpeech(testText, localProject.config.voiceName, localProject.config.provider);
+                              
+                              if (audioData) {
+                                const audio = new Audio(`data:audio/wav;base64,${audioData}`);
+                                audio.onended = () => setIsPlayingVoice(false);
+                                audio.onerror = () => setIsPlayingVoice(false);
+                                await audio.play();
+                              } else {
+                                // 检查API密钥是否存在
+                                const savedApiKey = localStorage.getItem('zhipuApiKey');
+                                if (!savedApiKey) {
+                                  alert('语音试听需要配置API密钥，请先在上方配置智谱AI API密钥。');
+                                } else {
+                                  alert('语音生成失败，可能是因为API并发限制或网络问题，请稍后重试。');
+                                }
+                                setIsPlayingVoice(false);
+                              }
+                            } catch (error) {
+                              console.error('语音试听失败:', error);
+                              alert('语音试听失败，请检查网络连接或API配置。');
                               setIsPlayingVoice(false);
                             }
                           } catch (error) {
