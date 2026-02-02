@@ -59,6 +59,20 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
   const animationFrameRef = useRef<number>();
   const videoStreamRef = useRef<MediaStream | null>(null);
 
+  // 移动端兼容性检测
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (window.innerWidth <= 768);
+  };
+
+  // 移动端触摸事件处理
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // 防止移动端双击缩放
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  };
+
   // 获取个性化样式
   const getCustomStyles = () => {
     const ui = project?.config.uiCustomization;
@@ -1119,6 +1133,13 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
         ...getCustomStyles(),
         color: project?.config.uiCustomization?.textColor || '#ffffff'
       }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={(e) => {
+        // 防止移动端页面滚动
+        if (e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }}
     >
       {/* Video chat interface */}
       {isVideoChatActive && (
@@ -1651,6 +1672,20 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
                   backgroundColor: project?.config.uiCustomization?.inputBg || 'rgba(255, 255, 255, 0.05)',
                   border: `1px solid ${project?.config.uiCustomization?.inputBorder || 'rgba(255, 255, 255, 0.1)'}`,
                   color: project?.config.uiCustomization?.inputText || '#ffffff'
+                }}
+                // 移动端优化
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                inputMode="text"
+                onFocus={(e) => {
+                  // 移动端键盘弹出时滚动到输入框
+                  if (isMobile()) {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }
                 }}
               />
               <button 

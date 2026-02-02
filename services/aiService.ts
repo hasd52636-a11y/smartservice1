@@ -172,7 +172,11 @@ export class AIService {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
         },
-        signal: controller.signal
+        signal: controller.signal,
+        // 移动端兼容性配置
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-cache'
       };
 
       // 只有POST请求才添加Content-Type和body
@@ -184,17 +188,22 @@ export class AIService {
         requestOptions.body = JSON.stringify(body);
       }
 
-      // 构建完整的URL
+      // 构建完整的URL和请求配置
       let fullUrl;
+      let finalRequestOptions = { ...requestOptions };
+      
       if (import.meta.env.DEV) {
-        // 开发环境：直接调用智谱API
+        // 开发环境：直接调用智谱API，需要传递API密钥
         fullUrl = `${ZHIPU_BASE_URL}${endpoint}`;
       } else {
-        // 生产环境：通过Vercel代理
-        fullUrl = `${ZHIPU_BASE_URL}${endpoint}`;
+        // 生产环境：通过Vercel代理，API密钥在服务器端环境变量中
+        fullUrl = `/api/zhipu${endpoint}`;
+        // 移除Authorization头，因为Vercel代理会从环境变量中获取
+        const { Authorization, ...headersWithoutAuth } = finalRequestOptions.headers as any;
+        finalRequestOptions.headers = headersWithoutAuth;
       }
 
-      const response = await fetch(fullUrl, requestOptions);
+      const response = await fetch(fullUrl, finalRequestOptions);
       
       clearTimeout(timeoutId);
 
@@ -247,22 +256,25 @@ export class AIService {
         throw new Error('智谱AI API密钥未设置，请先配置API密钥');
       }
 
-      // 构建完整的URL
+      // 构建完整的URL和请求配置
       let fullUrl;
+      let headers: any = {
+        'Content-Type': 'application/json',
+      };
+      
       if (import.meta.env.DEV) {
-        // 开发环境：直接调用智谱API
+        // 开发环境：直接调用智谱API，需要传递API密钥
         fullUrl = `${ZHIPU_BASE_URL}${endpoint}`;
+        headers['Authorization'] = `Bearer ${apiKey}`;
       } else {
-        // 生产环境：通过Vercel代理
-        fullUrl = `${ZHIPU_BASE_URL}${endpoint}`;
+        // 生产环境：通过Vercel代理，API密钥在服务器端环境变量中
+        fullUrl = `/api/zhipu${endpoint}`;
+        // 不添加Authorization头，Vercel代理会从环境变量中获取
       }
 
       const response = await fetch(fullUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
+        headers,
         body: JSON.stringify(body),
       });
 
@@ -861,16 +873,11 @@ export class AIService {
 
     // 仅使用智谱AI实现
     try {
-      // 智谱AI支持的音色列表
-      const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
-      const selectedVoice = validVoices.includes(voiceName) ? voiceName : 'alloy';
-      
+      // 智谱AI TTS API使用不同的格式
       const buffer = await this.zhipuFetch('/audio/speech', {
         model: 'tts-1',
         input: text,
-        voice: selectedVoice,
-        response_format: 'mp3',
-        speed: 1.0
+        voice: 'alloy'
       }, true);
       
       const uint8 = new Uint8Array(buffer as ArrayBuffer);
