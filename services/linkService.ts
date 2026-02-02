@@ -218,8 +218,8 @@ export class LinkService {
     
     // 优先使用Vite环境变量中的基础URL
     try {
-      if (typeof window !== 'undefined' && (window as any).import?.meta?.env) {
-        const env = (window as any).import.meta.env;
+      if (typeof window !== 'undefined' && window.import?.meta?.env) {
+        const env = window.import.meta.env;
         if (env.VITE_APP_BASE_URL) {
           return env.VITE_APP_BASE_URL;
         }
@@ -233,8 +233,8 @@ export class LinkService {
     
     // 尝试直接访问环境变量
     try {
-      if ((globalThis as any).VITE_APP_BASE_URL) {
-        return (globalThis as any).VITE_APP_BASE_URL;
+      if (globalThis.VITE_APP_BASE_URL) {
+        return globalThis.VITE_APP_BASE_URL;
       }
     } catch (e) {
       console.error('Error accessing globalThis:', e);

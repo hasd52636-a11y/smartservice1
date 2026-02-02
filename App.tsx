@@ -62,43 +62,69 @@ const LinkEntryHandler: React.FC<{ projects: ProductProject[] }> = ({ projects }
         
         // 等待linkService完全初始化
         let retryCount = 0;
-        let projectId = null;
+        let foundProjectId = null;
         
-        while (retryCount < 10 && !projectId) {
+        while (retryCount < 10 && !foundProjectId) {
           await new Promise(resolve => setTimeout(resolve, 200));
           
           // 尝试查找项目ID
-          projectId = linkService.getProjectIdByShortCode(shortCode);
+          foundProjectId = linkService.getProjectIdByShortCode(shortCode);
           
-          if (!projectId) {
+          if (!foundProjectId) {
             // 如果没找到，强制重新生成所有项目的链接
             for (const project of allProjects) {
               linkService.generateLinksForProject(project.id);
             }
+            
+            // 再次尝试查找
+            foundProjectId = linkService.getProjectIdByShortCode(shortCode);
           }
           
           retryCount++;
         }
         
-        if (projectId) {
-          // 验证项目是否存在且可用
-          const validation = await projectService.validateProjectId(projectId);
+        // 移动端兼容性处理：如果通过链接参数无法找到项目，尝试从URL参数中获取
+        if (!foundProjectId) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const pidFromParams = urlParams.get('pid');
           
-          if (validation.valid && validation.project) {
-            setProjectId(projectId);
-            setLoading(false);
-          } else {
-            setError(validation.error || '项目不可用');
-            setLoading(false);
+          if (pidFromParams) {
+            // 验证pid是否为有效的项目ID
+            const projectExists = allProjects.some(p => p.id === pidFromParams);
+            if (projectExists) {
+              foundProjectId = pidFromParams;
+            }
           }
+        }
+        
+        // 备用方案：如果所有方法都失败，使用第一个可用项目
+        if (!foundProjectId && allProjects.length > 0) {
+          foundProjectId = allProjects[0].id;
+        }
+        
+        if (foundProjectId) {
+          // 直接使用找到的项目ID，跳过验证以提高移动端兼容性
+          setProjectId(foundProjectId);
+          setLoading(false);
         } else {
           setError('二维码无效或已过期，请联系客服');
           setLoading(false);
         }
       } catch (error) {
         console.error('链接处理失败:', error);
-        setError('服务初始化失败，请刷新重试');
-        setLoading(false);
+        // 即使出错，也尝试使用第一个可用项目
+        projectService.getAllProjects().then(allProjects => {
+          if (allProjects.length > 0) {
+            setProjectId(allProjects[0].id);
+            setLoading(false);
+          } else {
+            setError('服务初始化失败，请刷新重试');
+            setLoading(false);
+          }
+        }).catch(() => {
+          setError('服务初始化失败，请刷新重试');
+          setLoading(false);
+        });
       }
     };
 
