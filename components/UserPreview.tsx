@@ -1131,7 +1131,9 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
       className={`flex flex-col h-screen w-full max-w-lg mx-auto shadow-2xl relative overflow-hidden border-x border-white/10 ${getFontClasses()}`}
       style={{
         ...getCustomStyles(),
-        color: project?.config.uiCustomization?.textColor || '#ffffff'
+        color: project?.config.uiCustomization?.textColor || '#ffffff',
+        // 移动端全屏优化
+        minHeight: '100dvh', // 动态视口高度，避免地址栏影响
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={(e) => {
@@ -1546,10 +1548,10 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
             </div>
           )}
           
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-8 overscroll-contain">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`}>
-                <div className={`flex items-end gap-3 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`flex items-end gap-2 sm:gap-3 max-w-[90%] sm:max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                   {/* 头像 */}
                   <div className="flex-shrink-0">
                     {renderAvatar(m.role === 'user')}
@@ -1558,7 +1560,7 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
                   {/* 消息内容 */}
                   <div className="flex-1">
                     <div 
-                      className={`p-5 shadow-xl text-sm leading-relaxed ${getMessageBorderRadius()} ${
+                      className={`p-3 sm:p-5 shadow-xl text-sm leading-relaxed ${getMessageBorderRadius()} ${
                         m.role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'
                       }`}
                       style={{
@@ -1568,19 +1570,23 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
                         color: m.role === 'user'
                           ? project?.config.uiCustomization?.userMessageText || '#ffffff'
                           : project?.config.uiCustomization?.aiMessageText || '#f1f5f9',
-                        border: m.role === 'assistant' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none'
+                        border: m.role === 'assistant' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
+                        // 移动端字体大小优化
+                        fontSize: isMobile() ? '14px' : '16px',
+                        lineHeight: isMobile() ? '1.4' : '1.6'
                       }}
                     >
-                      {m.image && <img src={m.image} className="rounded-2xl mb-4" />}
-                      <p>{m.text}</p>
+                      {m.image && <img src={m.image} className="rounded-2xl mb-4 max-w-full h-auto" />}
+                      <p className="break-words">{m.text}</p>
                     </div>
                     {m.role === 'assistant' && (
-                      <div className="flex gap-4 mt-3 pl-1">
+                      <div className="flex gap-2 sm:gap-4 mt-2 sm:mt-3 pl-1">
                         <button 
                           onClick={() => playTTS(m.text)} 
-                          className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-violet-400"
+                          className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-violet-400 p-1 sm:p-0"
                         >
-                          <Volume2 size={12}/> Audio 播放语音
+                          <Volume2 size={10}/> 
+                          <span className="hidden sm:inline">Audio</span> 播放语音
                         </button>
                       </div>
                     )}
@@ -1624,8 +1630,8 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
             )}
           </div>
 
-          {/* 手机端优化：输入框单独一行 */}
-          <div className="p-4 bg-[#0f1218]/80 backdrop-blur-3xl border-t border-white/5">
+          {/* 手机端优化：输入框区域 */}
+          <div className="p-3 sm:p-4 bg-[#0f1218]/80 backdrop-blur-3xl border-t border-white/5 safe-area-inset-bottom">
             <input
               ref={ocrFileInputRef}
               type="file"
@@ -1634,44 +1640,54 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
               className="hidden"
             />
             
-            {/* 功能按钮区 */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
+            {/* 功能按钮区 - 移动端优化 */}
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <div className="relative group">
                   <button 
                     onClick={() => fileInputRef.current?.click()} 
-                    className="p-3 bg-white/5 border border-white/10 rounded-xl text-violet-400"
+                    className="p-2 sm:p-3 bg-white/5 border border-white/10 rounded-xl text-violet-400 touch-manipulation"
+                    style={{ minWidth: '44px', minHeight: '44px' }} // 移动端最小触摸区域
                   >
-                    <Camera size={20} />
+                    <Camera size={18} />
                   </button>
                   <div className="absolute -bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-2 text-[10px] font-black text-white opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-50">
                     上传图片
                   </div>
                 </div>
-                <button onClick={toggleVoiceListening} className={`p-3 rounded-xl border ${isVoiceActive ? 'bg-red-500/20 border-red-500/30 text-red-400' : 'bg-white/5 border-white/10 text-violet-400'}`}>
-                  <Mic size={20} />
+                <button 
+                  onClick={toggleVoiceListening} 
+                  className={`p-2 sm:p-3 rounded-xl border touch-manipulation ${isVoiceActive ? 'bg-red-500/20 border-red-500/30 text-red-400' : 'bg-white/5 border-white/10 text-violet-400'}`}
+                  style={{ minWidth: '44px', minHeight: '44px' }}
+                >
+                  <Mic size={18} />
                 </button>
                 {project.config.videoChatEnabled && (
-                  <button onClick={toggleVideoChat} className="p-3 bg-white/5 border border-white/10 rounded-xl text-violet-400">
-                    <Video size={20} />
+                  <button 
+                    onClick={toggleVideoChat} 
+                    className="p-2 sm:p-3 bg-white/5 border border-white/10 rounded-xl text-violet-400 touch-manipulation"
+                    style={{ minWidth: '44px', minHeight: '44px' }}
+                  >
+                    <Video size={18} />
                   </button>
                 )}
-
               </div>
             </div>
             
-            {/* 输入框单独一行 */}
+            {/* 输入框 - 移动端优化 */}
             <div className="relative">
               <input 
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                 placeholder="问我关于此产品的问题..."
-                className="w-full px-5 py-4 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 pr-16"
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500/20 pr-14 sm:pr-16"
                 style={{
                   backgroundColor: project?.config.uiCustomization?.inputBg || 'rgba(255, 255, 255, 0.05)',
                   border: `1px solid ${project?.config.uiCustomization?.inputBorder || 'rgba(255, 255, 255, 0.1)'}`,
-                  color: project?.config.uiCustomization?.inputText || '#ffffff'
+                  color: project?.config.uiCustomization?.inputText || '#ffffff',
+                  fontSize: isMobile() ? '16px' : '14px', // 防止iOS缩放
+                  minHeight: '44px' // 移动端最小触摸区域
                 }}
                 // 移动端优化
                 autoComplete="off"
@@ -1687,15 +1703,25 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
                     }, 300);
                   }
                 }}
+                onBlur={() => {
+                  // 移动端键盘收起时滚动回底部
+                  if (isMobile()) {
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+                    }, 100);
+                  }
+                }}
               />
               <button 
                 onClick={() => handleSend()} 
-                className="absolute right-2 top-2 p-2 purple-gradient-btn text-white rounded-lg"
+                className="absolute right-2 top-2 p-2 purple-gradient-btn text-white rounded-lg touch-manipulation"
                 style={{
-                  backgroundColor: project?.config.uiCustomization?.buttonPrimary || '#8b5cf6'
+                  backgroundColor: project?.config.uiCustomization?.buttonPrimary || '#8b5cf6',
+                  minWidth: '40px',
+                  minHeight: '40px'
                 }}
               >
-                <Send size={18} />
+                <Send size={16} />
               </button>
             </div>
             

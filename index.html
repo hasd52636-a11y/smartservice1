@@ -1,9 +1,13 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a103d">
     <title>AI虚拟客服 - 商家后台</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css">
@@ -16,11 +20,56 @@
             --gold-glow: rgba(245, 158, 11, 0.3);
             --purple-glow: rgba(124, 58, 237, 0.4);
         }
+        
+        /* 移动端优化 */
+        @supports (padding: max(0px)) {
+            .safe-area-inset-bottom {
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* 防止移动端缩放 */
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        
+        /* 移动端触摸优化 */
+        .touch-manipulation {
+            touch-action: manipulation;
+        }
+        
+        /* 防止移动端双击缩放 */
+        button, a {
+            touch-action: manipulation;
+        }
+        
+        /* 移动端滚动优化 */
+        .overscroll-contain {
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         body {
             font-family: 'Inter', 'Noto Sans SC', sans-serif;
             background: #f8fafc;
             color: #1e293b;
             overflow-x: hidden;
+            /* 移动端优化 */
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
         /* Liquid Animated Background */
         .liquid-bg {
