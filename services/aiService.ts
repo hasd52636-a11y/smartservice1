@@ -163,11 +163,16 @@ export class AIService {
       // 判断是否为GET请求（没有body或body为空对象）
       const isGetRequest = !body || (typeof body === 'object' && Object.keys(body).length === 0);
       
+      // 创建AbortController用于超时控制
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+      
       const requestOptions: RequestInit = {
         method: isGetRequest ? 'GET' : 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
-        }
+        },
+        signal: controller.signal
       };
 
       // 只有POST请求才添加Content-Type和body
@@ -190,6 +195,8 @@ export class AIService {
       }
 
       const response = await fetch(fullUrl, requestOptions);
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMessage = 'Zhipu API Error';
@@ -221,7 +228,8 @@ export class AIService {
       console.error('Zhipu API request failed:', error);
       
       // 网络错误重试
-      if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout')) && retryCount < this.retryConfig.maxRetries) {
+      if ((error.name === 'AbortError' || (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout')))) && retryCount < this.retryConfig.maxRetries) {
+        console.log(`请求超时，正在重试 (${retryCount + 1}/${this.retryConfig.maxRetries})...`);
         await this.delay(this.retryConfig.retryDelay * (retryCount + 1));
         return this.zhipuFetch(endpoint, body, isBinary, retryCount + 1);
       }
@@ -853,11 +861,16 @@ export class AIService {
 
     // 仅使用智谱AI实现
     try {
+      // 智谱AI支持的音色列表
+      const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+      const selectedVoice = validVoices.includes(voiceName) ? voiceName : 'alloy';
+      
       const buffer = await this.zhipuFetch('/audio/speech', {
-        model: 'glm-tts',
+        model: 'tts-1',
         input: text,
-        voice: voiceName || 'tongtong',
-        response_format: 'wav'
+        voice: selectedVoice,
+        response_format: 'mp3',
+        speed: 1.0
       }, true);
       
       const uint8 = new Uint8Array(buffer as ArrayBuffer);

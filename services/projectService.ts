@@ -31,7 +31,7 @@ class ProjectService {
         status: ProjectStatus.ACTIVE,
         config: {
           provider: AIProvider.ZHIPU,
-          voiceName: 'tongtong',
+          voiceName: 'alloy',
           visionEnabled: true,
           visionPrompt: 'Check if all cables are plugged in and the LED is glowing green.',
           systemInstruction: 'You are a helpful product assistant.',
@@ -73,7 +73,7 @@ class ProjectService {
         status: ProjectStatus.ACTIVE,
         config: {
           provider: AIProvider.ZHIPU,
-          voiceName: 'tongtong',
+          voiceName: 'nova',
           visionEnabled: true,
           visionPrompt: 'Check if all cables are plugged in and the LED is glowing green.',
           systemInstruction: 'You are a technical support expert for SmartHome Pro products.',
@@ -122,7 +122,7 @@ class ProjectService {
         status: ProjectStatus.ACTIVE,
         config: {
           provider: AIProvider.ZHIPU,
-          voiceName: 'tongtong',
+          voiceName: 'echo',
           visionEnabled: false,
           visionPrompt: '',
           systemInstruction: 'You are a helpful assistant for SmartThermostat users.',

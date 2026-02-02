@@ -947,8 +947,8 @@ curl -X GET "${apiEndpoint}/config" \\
       {/* 趋势图表 */}
       <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900 mb-8">30天用户趋势</h2>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-80 min-h-[320px]">
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
             <AreaChart data={analyticsData.dailyTrends}>
               <defs>
                 <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
