@@ -297,6 +297,31 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
         aiService.setZhipuApiKey(savedApiKey);
       }
       // 如果没有localStorage中的密钥，aiService会自动使用环境变量中的密钥
+      
+      // 移动端语音功能预热
+      if (isMobile() && 'speechSynthesis' in window) {
+        // 预加载语音列表，提高首次使用体验
+        const loadVoices = () => {
+          const voices = speechSynthesis.getVoices();
+          if (voices.length > 0) {
+            console.log('移动端语音功能已准备就绪，可用语音数量:', voices.length);
+            
+            // 查找中文语音
+            const chineseVoices = voices.filter(voice => 
+              voice.lang.includes('zh') || voice.lang.includes('CN')
+            );
+            if (chineseVoices.length > 0) {
+              console.log('找到中文语音:', chineseVoices.map(v => v.name));
+            }
+          }
+        };
+        
+        if (speechSynthesis.getVoices().length === 0) {
+          speechSynthesis.onvoiceschanged = loadVoices;
+        } else {
+          loadVoices();
+        }
+      }
     };
     
     initializeAIService();
@@ -899,15 +924,51 @@ const UserPreview: React.FC<{ projects?: ProductProject[]; projectId?: string }>
         aiService.setZhipuApiKey(savedApiKey);
       }
       
-      const audioData = await aiService.generateSpeech(text, project.config.voiceName || 'tongtong', project.config.provider);
-      if (audioData) {
-        const audio = new Audio(`data:audio/wav;base64,${audioData}`);
+      // 移动端用户交互检查
+      const isMobileDevice = isMobile();
+      if (isMobileDevice) {
+        // 移动端需要用户明确点击才能播放语音
+        console.log('移动端TTS播放开始');
+      }
+      
+      const result = await aiService.generateSpeech(text, project.config.voiceName || 'tongtong', project.config.provider);
+      if (result === 'browser_tts_success') {
+        // 浏览器TTS成功，无需额外处理
+        console.log('语音播放成功');
+        
+        // 移动端成功提示
+        if (isMobileDevice) {
+          // 可以添加一个短暂的视觉反馈
+          const button = document.activeElement as HTMLElement;
+          if (button) {
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              button.style.transform = 'scale(1)';
+            }, 150);
+          }
+        }
+      } else if (result && result !== 'browser_tts_success') {
+        // 如果返回的是音频数据（base64），则播放
+        const audio = new Audio(`data:audio/wav;base64,${result}`);
         audio.play();
       } else {
-        // 不显示错误消息，静默处理
+        // 静默处理失败情况，不显示错误消息
+        console.log('语音合成不可用');
       }
     } catch (error) {
       console.error('TTS播放失败:', error);
+      
+      // 移动端特殊错误处理
+      if (isMobile() && error instanceof Error) {
+        if (error.message.includes('用户交互')) {
+          // 移动端权限问题，给用户友好提示
+          console.log('移动端语音需要用户交互权限');
+          // 可以显示一个提示，但不中断用户体验
+        } else if (error.message.includes('not-allowed')) {
+          console.log('移动端语音权限被拒绝');
+        }
+      }
+      
       // 不显示错误消息，静默处理
     }
   };

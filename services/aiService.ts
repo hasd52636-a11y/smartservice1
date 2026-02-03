@@ -4,24 +4,43 @@ import { KnowledgeItem, AIProvider } from "../types";
 // 智谱AI API配置
 const ZHIPU_BASE_URL = import.meta.env.DEV ? 'https://open.bigmodel.cn/api/paas/v4' : '/api/zhipu'
 
-// 智谱模型类型 - 基于官方API文档，保持简洁
+// 智谱模型类型 - 基于官方API文档最新规范
 export enum ZhipuModel {
-  // 主力文本模型
-  GLM_4_7 = 'glm-4.7',                    // 最新旗舰模型（默认）
+  // 最新旗舰文本模型
+  GLM_4_7 = 'glm-4.7',                    // 最新旗舰模型，面向Agentic Coding
+  GLM_4_7_FLASH = 'glm-4.7-flash',        // 高速版本
+  GLM_4_7_FLASHX = 'glm-4.7-flashx',      // 超高速版本
+  
+  // GLM-4.6系列
   GLM_4_6 = 'glm-4.6',                    // 高性价比选择
-  GLM_4_5_FLASH = 'glm-4.5-flash',        // 免费模型
+  
+  // GLM-4.5系列
+  GLM_4_5_AIR = 'glm-4.5-air',            // 轻量版
+  GLM_4_5_AIRX = 'glm-4.5-airx',          // 轻量高速版
+  GLM_4_5_FLASH = 'glm-4.5-flash',        // 免费高速模型
   
   // 视觉模型
   GLM_4_6V = 'glm-4.6v',                  // 主力视觉模型
+  GLM_4_6V_FLASH = 'glm-4.6v-flash',      // 视觉高速版
+  GLM_4_6V_FLASHX = 'glm-4.6v-flashx',    // 视觉超高速版
+  GLM_4_5V = 'glm-4.5v',                  // 视觉模型
   
-  // 音频模型
-  GLM_4_VOICE = 'glm-4-voice',            // 语音模型
+  // 音频模型（注意：智谱AI不支持TTS，仅支持语音理解）
+  GLM_4_VOICE = 'glm-4-voice',            // 语音理解模型（不支持TTS）
   
   // 向量模型
-  EMBEDDING_3 = 'embedding-3',            // 向量化模型
+  EMBEDDING_3 = 'embedding-3',            // 最新向量模型，支持自定义维度
+  EMBEDDING_2 = 'embedding-2',            // 第二代向量模型
   
-  // 实时模型
-  GLM_REALTIME = 'glm-realtime-flash',    // 实时交互
+  // 视频生成模型
+  COGVIDEOX_3 = 'cogvideox-3',            // 视频生成模型
+  
+  // 手机助理模型
+  AUTOGLM_PHONE = 'autoglm-phone',        // 手机智能助理
+  
+  // 思考模型
+  GLM_4_1V_THINKING_FLASH = 'glm-4.1v-thinking-flash',     // 视觉思考模型
+  GLM_4_1V_THINKING_FLASHX = 'glm-4.1v-thinking-flashx',   // 视觉思考高速版
 }
 
 // 智能路由配置 - 根据任务类型自动选择最优模型
@@ -41,23 +60,23 @@ export const DEFAULT_SMART_ROUTING: SmartRoutingConfig = {
   textChat: ZhipuModel.GLM_4_7,              // 最新旗舰模型，最佳对话体验
   codeGeneration: ZhipuModel.GLM_4_7,        // Agentic Coding 专用优化
   imageAnalysis: ZhipuModel.GLM_4_6V,        // 最强视觉理解能力
-  voiceInteraction: ZhipuModel.GLM_4_VOICE,  // 专业语音模型
+  voiceInteraction: ZhipuModel.GLM_4_VOICE,  // 专业语音模型（仅语音理解）
   embedding: ZhipuModel.EMBEDDING_3,         // 最新向量模型
-  realtime: ZhipuModel.GLM_REALTIME,         // 实时交互专用
-  rolePlay: ZhipuModel.GLM_4_7,           // 使用通用模型
-  thinking: ZhipuModel.GLM_4_7,             // 支持思考模式
+  realtime: ZhipuModel.GLM_4_7,              // 使用最新模型替代实时模型
+  rolePlay: ZhipuModel.GLM_4_7,              // 使用通用模型
+  thinking: ZhipuModel.GLM_4_7,              // 支持思考模式
 };
 
 // 高性价比路由配置 - 成本优化版本
 export const COST_OPTIMIZED_ROUTING: SmartRoutingConfig = {
   textChat: ZhipuModel.GLM_4_5_FLASH,        // 免费高效
   codeGeneration: ZhipuModel.GLM_4_6,        // 高性价比编码
-  imageAnalysis: ZhipuModel.GLM_4_6V,  // 视觉分析
-  voiceInteraction: ZhipuModel.GLM_4_VOICE,  // 语音专用
+  imageAnalysis: ZhipuModel.GLM_4_6V_FLASH,  // 视觉分析高速版
+  voiceInteraction: ZhipuModel.GLM_4_VOICE,  // 语音专用（仅语音理解）
   embedding: ZhipuModel.EMBEDDING_3,         // 向量化
-  realtime: ZhipuModel.GLM_REALTIME,     // 实时交互
-  rolePlay: ZhipuModel.GLM_4_5_FLASH,       // 通用模型
-  thinking: ZhipuModel.GLM_4_6,             // 思考能力
+  realtime: ZhipuModel.GLM_4_7_FLASH,        // 高速交互
+  rolePlay: ZhipuModel.GLM_4_5_FLASH,        // 通用模型
+  thinking: ZhipuModel.GLM_4_6,              // 思考能力
 };
 
 // 任务类型检测
@@ -165,7 +184,7 @@ export class AIService {
       
       // 创建AbortController用于超时控制
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 增加到60秒超时
       
       const requestOptions: RequestInit = {
         method: isGetRequest ? 'GET' : 'POST',
@@ -336,8 +355,11 @@ export class AIService {
                       callback('', true, parsed.choices[0].finish_reason);
                     }
                   } catch (error) {
-                    // 忽略JSON解析错误，可能是不完整的数据块
-                    console.warn('Skipping malformed SSE chunk:', data.substring(0, 100));
+                    // 改进SSE数据块解析错误处理
+                    if (data.length > 10) { // 只对较长的数据块进行警告
+                      console.warn('Skipping malformed SSE chunk:', data.substring(0, 100));
+                    }
+                    // 继续处理，不中断流
                   }
                 }
               }
@@ -866,47 +888,176 @@ export class AIService {
   }
 
   async generateSpeech(text: string, voiceName: string, provider: AIProvider): Promise<string | undefined> {
-    // 检查API密钥是否存在
-    const apiKey = this.getZhipuApiKey();
-    if (!apiKey) {
-      return undefined;
-    }
-
-    // 仅使用智谱AI实现
+    // 智谱AI目前不支持TTS语音合成功能，GLM-4-Voice仅支持语音理解
+    // 使用浏览器原生TTS作为替代方案
+    console.warn('智谱AI暂不支持TTS语音合成功能，使用浏览器原生TTS');
+    
     try {
-      // 智谱AI TTS API使用不同的格式
-      // 使用智谱AI支持的正确音色
-      // 注意：智谱AI API的音色名称可能会更新，需要确保使用当前支持的音色
-      const validVoiceNames = ['tongtong', 'yaya', 'aiwei', 'aha'];
-      
-      // 确保voiceName是有效的字符串
-      let selectedVoice = 'tongtong'; // 默认音色
-      
-      if (voiceName && typeof voiceName === 'string') {
-        selectedVoice = validVoiceNames.includes(voiceName) ? voiceName : 'tongtong';
+      // 检查浏览器是否支持语音合成
+      if ('speechSynthesis' in window) {
+        await this.generateBrowserTTS(text, voiceName);
+        return 'browser_tts_success'; // 返回成功标识
+      } else {
+        console.warn('浏览器不支持语音合成功能');
+        return undefined;
       }
-      
-      // 智谱AI TTS API请求格式
-      const ttsRequest = {
-        model: 'tts-1',
-        input: text,
-        voice: selectedVoice
-      };
-      
-      console.log('TTS Request:', ttsRequest);
-      
-      const buffer = await this.zhipuFetch('/audio/speech', ttsRequest, true);
-      
-      const uint8 = new Uint8Array(buffer as ArrayBuffer);
-      let binary = '';
-      for (let i = 0; i < uint8.byteLength; i++) binary += String.fromCharCode(uint8[i]);
-      return window.btoa(binary);
-    } catch (e) {
-      console.error("Zhipu TTS Failed", e);
-      
-      // 即使TTS失败，也返回undefined而不是抛出错误，确保UI不会崩溃
+    } catch (error) {
+      console.error('语音合成失败:', error);
       return undefined;
     }
+  }
+
+  // 浏览器原生TTS实现 - 增强移动端兼容性
+  private generateBrowserTTS(text: string, voiceName: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      try {
+        // 检查浏览器是否支持语音合成
+        if (!('speechSynthesis' in window)) {
+          console.warn('浏览器不支持语音合成功能');
+          reject(new Error('浏览器不支持语音合成'));
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // 移动端兼容性检测
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // 配置语音参数 - 移动端优化
+        utterance.lang = 'zh-CN'; // 中文
+        utterance.rate = isMobile ? 0.8 : 0.9; // 移动端语速稍慢
+        utterance.pitch = 1.0; // 正常音调
+        utterance.volume = isMobile ? 0.9 : 0.8; // 移动端音量稍大
+        
+        // 移动端需要等待语音列表加载
+        const loadVoices = () => {
+          const voices = speechSynthesis.getVoices();
+          
+          if (voices.length === 0 && !isMobile) {
+            // 桌面端可能需要等待
+            setTimeout(loadVoices, 100);
+            return;
+          }
+          
+          // 尝试选择合适的中文语音
+          let chineseVoice = null;
+          
+          if (isMobile) {
+            // 移动端优先选择系统默认中文语音
+            chineseVoice = voices.find(voice => 
+              voice.lang.includes('zh-CN') || 
+              voice.lang.includes('cmn-CN') ||
+              (voice.lang.includes('zh') && voice.default)
+            );
+            
+            // iOS特殊处理
+            if (!chineseVoice && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+              chineseVoice = voices.find(voice => 
+                voice.name.includes('Ting-Ting') || 
+                voice.name.includes('Sin-ji') ||
+                voice.lang.includes('zh')
+              );
+            }
+            
+            // Android特殊处理
+            if (!chineseVoice && /Android/i.test(navigator.userAgent)) {
+              chineseVoice = voices.find(voice => 
+                voice.name.includes('Chinese') ||
+                voice.lang.includes('zh-CN')
+              );
+            }
+          } else {
+            // 桌面端选择
+            chineseVoice = voices.find(voice => 
+              voice.lang.includes('zh') || 
+              voice.lang.includes('CN') ||
+              voice.name.includes('Chinese')
+            );
+          }
+          
+          if (chineseVoice) {
+            utterance.voice = chineseVoice;
+            console.log('选择语音:', chineseVoice.name, chineseVoice.lang);
+          } else {
+            console.warn('未找到中文语音，使用默认语音');
+          }
+          
+          // 开始语音合成
+          startSpeech();
+        };
+        
+        const startSpeech = () => {
+          // 移动端需要用户交互才能播放
+          if (isMobile) {
+            // 检查是否需要用户激活
+            if (speechSynthesis.speaking || speechSynthesis.pending) {
+              speechSynthesis.cancel();
+            }
+          }
+          
+          // 事件处理
+          utterance.onstart = () => {
+            console.log('TTS开始播放');
+          };
+          
+          utterance.onend = () => {
+            console.log('TTS播放完成');
+            resolve('browser_tts_success');
+          };
+          
+          utterance.onerror = (event) => {
+            console.error('Browser TTS error:', event);
+            
+            // 移动端特殊错误处理
+            if (isMobile && event.error === 'not-allowed') {
+              reject(new Error('移动端需要用户交互才能播放语音'));
+            } else if (event.error === 'network') {
+              reject(new Error('网络错误，语音播放失败'));
+            } else {
+              reject(new Error(`浏览器语音合成失败: ${event.error}`));
+            }
+          };
+          
+          utterance.onpause = () => {
+            console.log('TTS暂停');
+          };
+          
+          utterance.onresume = () => {
+            console.log('TTS恢复');
+          };
+          
+          // 移动端兼容性处理
+          try {
+            speechSynthesis.speak(utterance);
+            
+            // iOS Safari 兼容性处理
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+              // iOS需要短暂延迟确保语音开始
+              setTimeout(() => {
+                if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+                  console.warn('iOS语音可能未开始，尝试重新播放');
+                  speechSynthesis.speak(utterance);
+                }
+              }, 100);
+            }
+          } catch (error) {
+            console.error('语音播放异常:', error);
+            reject(error);
+          }
+        };
+        
+        // 加载语音列表
+        if (speechSynthesis.getVoices().length === 0) {
+          speechSynthesis.onvoiceschanged = loadVoices;
+        } else {
+          loadVoices();
+        }
+        
+      } catch (error) {
+        console.error('Browser TTS initialization failed:', error);
+        reject(error);
+      }
+    });
   }
 
   async generateVideoGuide(
@@ -943,14 +1094,16 @@ export class AIService {
 
       onProgress?.(30, '正在调用CogVideoX-3生成视频...');
 
-      // 2. 调用CogVideoX-3 API生成视频
+      // 2. 调用CogVideoX-3 API生成视频 - 使用正确的模型名称
       const videoGenerationBody: any = {
-        model: 'cogvideox-3',
+        model: ZhipuModel.COGVIDEOX_3, // 使用枚举值确保正确性
         prompt: prompt,
         quality: 'quality',
         with_audio: true,
         size: '1920x1080',
-        fps: 30
+        fps: 30,
+        duration: 5, // 默认5秒视频
+        watermark_enabled: false // 商业用途，关闭水印
       };
 
       // 如果提供了参考图片，添加到请求中
@@ -1028,25 +1181,39 @@ export class AIService {
           
           console.log(`轮询视频生成状态 (${attempts}/${maxAttempts})...`);
 
-          const statusResponse = await this.zhipuFetch(`/videos/generations/${taskId}`, {});
+          // 使用正确的查询端点 - 根据官方文档
+          const statusResponse = await this.zhipuFetch(`/async-result/${taskId}`, {});
           
           console.log('视频生成状态:', statusResponse);
 
-          switch (statusResponse.status) {
+          // 根据智谱AI官方文档的状态字段
+          const taskStatus = statusResponse.task_status || statusResponse.status;
+          
+          switch (taskStatus) {
+            case 'SUCCESS':
             case 'succeeded':
               console.log('视频生成成功!');
+              // 从响应中提取视频URL
+              const videoUrl = statusResponse.video_result?.[0]?.url || statusResponse.video_url;
+              if (!videoUrl) {
+                reject(new Error('视频生成完成但未返回视频URL'));
+                return;
+              }
               resolve({
-                video_url: statusResponse.video_url,
-                duration: statusResponse.duration,
+                video_url: videoUrl,
+                cover_image_url: statusResponse.video_result?.[0]?.cover_image_url,
+                duration: statusResponse.duration || 5,
                 status: 'succeeded'
               });
               break;
               
+            case 'FAIL':
             case 'failed':
               console.error('视频生成失败:', statusResponse.error);
-              reject(new Error(`视频生成失败: ${statusResponse.error?.message || '未知错误'}`));
+              reject(new Error(`视频生成失败: ${statusResponse.error?.message || statusResponse.message || '未知错误'}`));
               break;
               
+            case 'PROCESSING':
             case 'processing':
             case 'pending':
               if (attempts >= maxAttempts) {
@@ -1057,6 +1224,7 @@ export class AIService {
               break;
               
             default:
+              console.log('未知状态:', taskStatus);
               if (attempts >= maxAttempts) {
                 reject(new Error('视频生成超时，请稍后重试'));
               } else {
@@ -1090,7 +1258,7 @@ export class AIService {
         return false;
       }
       
-      const endpoint = `wss://open.bigmodel.cn/api/paas/v4/realtime?model=${ZhipuModel.GLM_REALTIME}`;
+      const endpoint = `wss://open.bigmodel.cn/api/paas/v4/realtime?model=${ZhipuModel.GLM_4_7}`;
       
       this.realtimeWebSocket = new WebSocket(endpoint);
       this.realtimeCallbacks.push(callback);

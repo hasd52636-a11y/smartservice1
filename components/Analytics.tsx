@@ -947,8 +947,8 @@ curl -X GET "${apiEndpoint}/config" \\
       {/* 趋势图表 */}
       <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900 mb-8">30天用户趋势</h2>
-        <div className="h-80 min-h-[320px]">
-          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+        <div className="h-80 min-h-[320px] w-full">
+          <ResponsiveContainer width="100%" height="100%" minHeight={320}>
             <AreaChart data={analyticsData.dailyTrends}>
               <defs>
                 <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
@@ -1000,8 +1000,8 @@ curl -X GET "${apiEndpoint}/config" \\
         {/* 功能使用统计 */}
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-8">功能使用统计</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <BarChart data={analyticsData.featureUsage} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
@@ -1016,8 +1016,8 @@ curl -X GET "${apiEndpoint}/config" \\
         {/* 24小时活跃度分布 */}
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-8">24小时活跃度分布</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <LineChart data={analyticsData.hourlyDistribution}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
@@ -1032,8 +1032,8 @@ curl -X GET "${apiEndpoint}/config" \\
         {/* 用户满意度详细分布 */}
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-8">用户满意度详细分布</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <BarChart data={analyticsData.satisfactionDetails}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="rating" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
@@ -1049,8 +1049,8 @@ curl -X GET "${apiEndpoint}/config" \\
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-8">服务类型分布</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <BarChart data={analyticsData.serviceTypeData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
@@ -1066,8 +1066,8 @@ curl -X GET "${apiEndpoint}/config" \\
 
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-8">问题分类分布</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <PieChart>
                 <Pie
                   data={analyticsData.issueDistribution}
@@ -1096,8 +1096,8 @@ curl -X GET "${apiEndpoint}/config" \\
             <Monitor size={20} className="text-blue-500" />
             终端类型详细分布
           </h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <BarChart data={analyticsData.terminalTypes} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
@@ -1115,8 +1115,8 @@ curl -X GET "${apiEndpoint}/config" \\
             <Smartphone size={20} className="text-green-500" />
             手机型号分布
           </h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <BarChart data={analyticsData.mobileModels.slice(0, 8)} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
@@ -1134,8 +1134,8 @@ curl -X GET "${apiEndpoint}/config" \\
             <Laptop size={20} className="text-purple-500" />
             操作系统版本
           </h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <PieChart>
                 <Pie
                   data={analyticsData.osVersions.filter(item => item.count > 0)}
@@ -1161,8 +1161,8 @@ curl -X GET "${apiEndpoint}/config" \\
             <Chrome size={20} className="text-orange-500" />
             浏览器分布
           </h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <PieChart>
                 <Pie
                   data={analyticsData.browserDistribution.filter(item => item.count > 0)}
