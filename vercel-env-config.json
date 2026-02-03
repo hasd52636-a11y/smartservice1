@@ -1,0 +1,38 @@
+{
+  "name": "SmartService AI客服系统",
+  "description": "智能售后客服系统 - Vercel环境变量配置",
+  "note": "以下环境变量都是可选的，用户可以在前端界面直接配置API密钥",
+  "environment_variables": {
+    "ZHIPU_API_KEY": {
+      "description": "智谱AI API密钥（可选 - 作为备用密钥）",
+      "required": false,
+      "example": "your_zhipu_api_key_here",
+      "note": "如果不设置，用户需要在前端界面配置API密钥"
+    },
+    "NODE_ENV": {
+      "description": "环境标识",
+      "required": false,
+      "default": "production",
+      "example": "production"
+    },
+    "API_TIMEOUT": {
+      "description": "API请求超时时间（毫秒）",
+      "required": false,
+      "default": "60000",
+      "example": "60000"
+    }
+  },
+  "deployment_instructions": {
+    "step1": "连接GitHub仓库到Vercel",
+    "step2": "选择项目根目录为 smart008-main -005",
+    "step3": "（可选）在Vercel项目设置中添加环境变量",
+    "step4": "点击Deploy部署",
+    "step5": "部署完成后，用户在网站上配置API密钥即可使用"
+  },
+  "important_notes": [
+    "环境变量是可选的，主要作为备用密钥使用",
+    "用户可以在前端界面直接配置自己的API密钥",
+    "这种设计让每个用户使用自己的API配额",
+    "无需开发者管理和承担API成本"
+  ]
+}

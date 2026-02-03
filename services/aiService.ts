@@ -215,11 +215,10 @@ export class AIService {
         // 开发环境：直接调用智谱API，需要传递API密钥
         fullUrl = `${ZHIPU_BASE_URL}${endpoint}`;
       } else {
-        // 生产环境：通过Vercel代理，API密钥在服务器端环境变量中
+        // 生产环境：通过Vercel代理，传递API密钥到后端
         fullUrl = `/api/zhipu${endpoint}`;
-        // 移除Authorization头，因为Vercel代理会从环境变量中获取
-        const { Authorization, ...headersWithoutAuth } = finalRequestOptions.headers as any;
-        finalRequestOptions.headers = headersWithoutAuth;
+        // 保留Authorization头，让Vercel代理从请求头获取API密钥
+        // 这样用户在前端配置的API密钥可以正确传递到后端
       }
 
       const response = await fetch(fullUrl, finalRequestOptions);
@@ -286,9 +285,10 @@ export class AIService {
         fullUrl = `${ZHIPU_BASE_URL}${endpoint}`;
         headers['Authorization'] = `Bearer ${apiKey}`;
       } else {
-        // 生产环境：通过Vercel代理，API密钥在服务器端环境变量中
+        // 生产环境：通过Vercel代理，传递API密钥到后端
         fullUrl = `/api/zhipu${endpoint}`;
-        // 不添加Authorization头，Vercel代理会从环境变量中获取
+        // 保留Authorization头，让Vercel代理从请求头获取API密钥
+        headers['Authorization'] = `Bearer ${apiKey}`;
       }
 
       const response = await fetch(fullUrl, {

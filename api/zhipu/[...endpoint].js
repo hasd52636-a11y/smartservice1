@@ -5,14 +5,21 @@ const ZHIPU_BASE_URL = 'https://open.bigmodel.cn/api/paas/v4';
 
 // 获取API密钥
 function getApiKey(req) {
-  // 优先从请求头获取
+  // 优先从请求头获取（用户在前端配置的密钥）
   const authHeader = req?.headers?.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.substring(7);
   }
   
-  // 从环境变量获取
-  return process.env.ZHIPU_API_KEY || process.env.API_KEY || '';
+  // 备用：从环境变量获取（如果用户没有配置前端密钥）
+  const envKey = process.env.ZHIPU_API_KEY || process.env.API_KEY || '';
+  if (envKey) {
+    console.log('使用环境变量API密钥');
+    return envKey;
+  }
+  
+  console.log('未找到API密钥：请求头和环境变量都为空');
+  return '';
 }
 
 // 处理SSE流式响应
